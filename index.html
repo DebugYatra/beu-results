@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bihar Engineering University Results</title>
+    <link rel="stylesheet" href="./style.css">
+</head>
+
+<body>
+    <div class="container">
+        <h1>Bihar Engineering University Results</h1>
+        <form id="resultForm">
+            <select id="year"></select>
+            <select id="sem"></select>
+            <input type="text" id="reg" placeholder="Enter Registration No." required>
+            <button type="submit">Get Result</button>
+        </form>
+
+        <div class="iframe-container">
+            <iframe id="resultFrame"></iframe>
+            <div class="loader" id="loader" aria-live="polite">
+                <div class="spinner"></div>
+                <p>Loading result... Please wait</p>
+            </div>
+            <div class="empty-message" id="emptyMessage" aria-live="polite">
+                No result found. Please check your details and try again.
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Populate year dropdown (last 8 years)
+        const yearSelect = document.getElementById("year");
+        const currentYear = new Date().getFullYear();
+
+        const defaultYear = document.createElement("option");
+        defaultYear.textContent = "Select Year";
+        defaultYear.disabled = true;
+        defaultYear.selected = true;
+        yearSelect.appendChild(defaultYear);
+
+        for (let i = 0; i < 7; i++) {
+            const option = document.createElement("option");
+            option.value = currentYear - i;
+            option.textContent = currentYear - i;
+            yearSelect.appendChild(option);
+        }
+
+        // Populate semester dropdown
+        const semSelect = document.getElementById("sem");
+        const defaultSem = document.createElement("option");
+        defaultSem.textContent = "Select Semester";
+        defaultSem.disabled = true;
+        defaultSem.selected = true;
+        semSelect.appendChild(defaultSem);
+
+        const sems = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII"];
+        sems.forEach((s, i) => {
+            const option = document.createElement("option");
+            option.value = i + 1;
+            option.textContent = `Semester ${i + 1}`;
+            semSelect.appendChild(option);
+        });
+
+        // Semester mapping
+        const semesters = {
+            1: { inString: "1st", roman: "I" },
+            2: { inString: "2nd", roman: "II" },
+            3: { inString: "3rd", roman: "III" },
+            4: { inString: "4th", roman: "IV" },
+            5: { inString: "5th", roman: "V" },
+            6: { inString: "6th", roman: "VI" },
+            7: { inString: "7th", roman: "VII" },
+            8: { inString: "8th", roman: "VIII" },
+        };
+
+        const iframe = document.getElementById("resultFrame");
+        const loader = document.getElementById("loader");
+        const emptyMessage = document.getElementById("emptyMessage");
+
+        // Handle form submit
+        document.getElementById("resultForm").addEventListener("submit", (e) => {
+            e.preventDefault();
+
+            const year = document.getElementById("year").value;
+            const sem = Number(document.getElementById("sem").value);
+            const regNo = document.getElementById("reg").value.trim();
+
+            if (!regNo) {
+                alert("Please enter Registration No.");
+                return;
+            }
+
+            const selectedSem = semesters[sem];
+            const semester = `${selectedSem.inString}Sem`;
+            const batchedAndYear = `B${year}`;
+            const semInRoman = selectedSem.roman;
+
+            let session = "";        // Populate semester dropdown
+
+            if (semInRoman === "I") session = String(year);
+            else if (["II", "III"].includes(semInRoman)) session = String(Number(year) + 1);
+            else if (["IV", "V"].includes(semInRoman)) session = String(Number(year) + 2);
+            else if (["VI", "VII"].includes(semInRoman)) session = String(Number(year) + 3);
+            else session = String(Number(year) + 4);
+
+            let resultUrl = `https://results.beup.ac.in/ResultsBTech${semester}${session}_${batchedAndYear}Pub.aspx?Sem=${semInRoman}&RegNo=${regNo}`;
+            if (semInRoman === "VIII") {
+                resultUrl = `https://results.beup.ac.in/ResultsBTech${semester}${session}Pub.aspx?Sem=${semInRoman}&RegNo=${regNo}`;
+            }
+
+            // Show loader
+            loader.style.display = "block";
+            emptyMessage.style.display = "none";
+            iframe.style.display = "none";
+            iframe.src = resultUrl;
+
+            // Timeout in case iframe never loads
+            let checkTimeout = setTimeout(() => {
+                loader.style.display = "none";
+                iframe.style.display = "none";
+                emptyMessage.style.display = "block";
+            }, 15000); // 15 sec timeout
+
+            // On iframe load
+            iframe.onload = () => {
+                clearTimeout(checkTimeout);
+                loader.style.display = "none";
+                iframe.style.display = "block";
+                emptyMessage.style.display = "none";
+            };
+        });
+    </script>
+</body>
+
+</html>
