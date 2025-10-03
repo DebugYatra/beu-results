@@ -16,9 +16,14 @@ A simple web app to fetch and display **Bihar Engineering University (BEU)** res
 
 ## Structure
 
+```
 beu-results/
 │── index.html
 │── README.md
+│── style.css
+└── assets/
+   └── index.png
+```
 
 1. Clone the repository:
 
